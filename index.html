@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Blog</title>
+</head>
+<body>
+    <div id="new_entry">
+        <textarea id="input_content"></textarea>
+        <br>
+        <input type="password" id="input_password">
+        <input type="button" id="entry_submission">
+        <br>
+        <div id="submission_status">
+    </div>
+
+    <div id="feed">
+    </div>
+
+    <script type="text/javascript">
+        const initialEntryRequestReps = 12;
+        const entryRequestReps = 3;
+        var oldestEntryId = newestEntryId = null;
+
+        window.onload = function() {
+            for (var i = 0; i < initialEntryRequestReps; i++) {
+                loadOlderEntry();
+            }
+        }
+
+        window.onscroll = function() {
+            if ((window.innerHeight + Math.ceil(window.pageYOffset)) >= document.body.offsetHeight) {
+                for (var i = 0; i < entryRequestReps; i++) {
+                    loadOlderEntry();
+                }
+            }
+        };
+
+        document.getElementById('entry_submission').onclick = function() {
+            // TODO Implement with server
+            const request = new XMLHttpRequest();
+            request.open("POST", window.location, true);
+            console.log(document.getElementById('input_content').value);
+            request.send(JSON.stringify({
+                content: document.getElementById('input_content').value,
+                password: document.getElementById('input_password').value
+            }));
+            if (document.getElementById('input_password').value === '12345') {
+                loadNewerEntry();
+                document.getElementById('submission_status').innerHTML = "";
+            } else {
+                document.getElementById('submission_status').innerHTML = "Wrong password";
+            }
+        };
+
+        function loadOlderEntry() {
+            // TODO Implement with server
+            if (oldestEntryId == null) {
+                oldestEntryId = 0;
+                newestEntryId = 0;
+            } else {
+                oldestEntryId++;
+            }
+            const dateText = "Date for entry " + oldestEntryId;
+            const content = "Content for entry " + oldestEntryId;
+
+            var entry = generateEntry(dateText, content);
+            document.getElementById('feed').append(entry);
+        };
+
+        function loadNewerEntry() {
+            // TODO Implement with server
+            if (newestEntryId == null) {
+                oldestEntryId = 0;
+                newestEntryId = 0;
+            } else {
+                newestEntryId--;
+            }
+            const dateText = "Date for entry " + newestEntryId;
+            const content = "Content for entry " + newestEntryId;
+
+            var entry = generateEntry(dateText, content);
+            document.getElementById('feed').prepend(entry);
+        };
+
+        function generateEntry(dateText, content) {
+            var header = document.createElement('h2');
+            header.innerHTML = dateText;
+            var entry = document.createElement('div');
+            entry.append(header);
+            entry.append(content);
+            return entry;
+        };
+    </script>
+</body>
+</html>
