@@ -6,51 +6,53 @@ function getTable() {
         .db().collection('entries');
 }
 
-async function getEntry(entryDateBound) {
-    const condition = entryDateBound === null ?
-                        {} : { time: { $lt: entryDateBound } };
-    return getTable().findOne(
-        condition,
+async function getEntry(date) {
+    return (await getTable().find(
+        {
+            date: { $eq: date }
+        },
         {
             sort: { time: -1 },
             projection: { _id: 0 }
         }
-    );
+    )).toArray();
 }
 
 async function insert(entry) {
     return getTable().insert(entry);
 }
 
-async function post(password, content) {
-    if (password !== '12345') {
-        throw 'Wrong password'
-    } else {
-        const table = getTable();
-        await insert({ time: new Date(), content: content });
-    }
+async function post(content) {
+    const table = getTable();
+    const date_now = Date.now();
+    const date = Math.floor(date_now / (24 * 3600 * 1000));
+    const time = date_now % (24 * 3600 * 1000);
+    await insert({ date, time, content });
 }
 
 export const handler = async (event) => {
-    // TODO implement
-    var statusCode = 404, body;
-    if (event.url === '/' && event.method === 'GET') {
-        if (event.url === '/') {
+    var statusCode = 500, headers = {}, body;
+    if (event.requestContext.http.method === 'GET') {
+        if (event.requestContext.http.url === '/') {
             const data = fs.readFileSync('index.html');
             statusCode = 200;
+            headers = { 'Context-Type': 'text/html' };
             body = data.toString();
         } else {
-            const entry_id = event.url
+            const date = event.requestContext.http.url.slice(1);
+            const entries = await getEntry(date);
+            statusCode = 200;
+            headers = { 'Context-Type': 'application/json' };
+            body = JSON.stringify(entries);
         }
-    } else if (event.method === 'POST') {
-        console.log(event);
-        var data = '';
-        event.on('data', (chunk) => {
-            data += chunk;
-        }).on('end', () => {
-            const data = JSON.parse(data);
-            await
-        });
+    } else if (event.requestContext.http.method === 'POST') {
+        const { password, content } = JSON.parse(event.body);
+        if (password !== '12345') {
+           statusCode = 503;
+        } else {
+            await post(password, content);
+            statusCode = 200;
+        }
     }
-    return { statusCode, body };
+    return { statusCode, headers, body };
 };
