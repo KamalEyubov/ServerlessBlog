@@ -1,16 +1,35 @@
 import * as fs from 'fs';
+import * as mongodb from 'mongodb';
 
-async post(content) {
-    // TODO
-    // Find if Meta empty
-    // If Meta empty initialize it with "zero" entry
-    // Otherwise, find last entry id
-    // Update next field of the last entry in the entries
-    // Write new entry with previous field set at the last entry id
-    // Update last entry id in the meta table
+function getTable() {
+    return new mongodb.MongoClient('mongodb://localhost:27017')
+        .db().collection('entries');
 }
 
-async getEntry()
+async function getEntry(entryDateBound) {
+    const condition = entryDateBound === null ?
+                        {} : { time: { $lt: entryDateBound } };
+    return getTable().findOne(
+        condition,
+        {
+            sort: { time: -1 },
+            projection: { _id: 0 }
+        }
+    );
+}
+
+async function insert(entry) {
+    return getTable().insert(entry);
+}
+
+async function post(password, content) {
+    if (password !== '12345') {
+        throw 'Wrong password'
+    } else {
+        const table = getTable();
+        await insert({ time: new Date(), content: content });
+    }
+}
 
 export const handler = async (event) => {
     // TODO implement
@@ -25,11 +44,12 @@ export const handler = async (event) => {
         }
     } else if (event.method === 'POST') {
         console.log(event);
-        var data = "";
-        event.on("data", (chunk) => {
+        var data = '';
+        event.on('data', (chunk) => {
             data += chunk;
-        }).on("end", () => {
-            console.log(JSON.parse(data));
+        }).on('end', () => {
+            const data = JSON.parse(data);
+            await
         });
     }
     return { statusCode, body };
