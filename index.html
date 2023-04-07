@@ -19,7 +19,9 @@
     <script type="text/javascript">
         const initialEntryRequestReps = 12;
         const entryRequestReps = 3;
-        var oldestEntryDate = newestEntryDate = null;
+        var newestDateTime = Date.now();
+        var oldestEntryDate = Math.floor(newestDateTime / (24 * 3600 * 1000));
+        var entriesBuffer = [];
 
         window.onload = function() {
             for (var i = 0; i < initialEntryRequestReps; i++) {
@@ -54,12 +56,12 @@
 
         function loadOlderEntry() {
             // TODO Implement with server
-            if (oldestEntryId == null) {
-                oldestEntryId = 0;
-                newestEntryId = 0;
-            } else {
-                oldestEntryId++;
+            if (entriesBuffer.length === 0) {
+                // TODO Decrement oldestDate until
+                //  End reached or entries loaded
+                // TODO Push entries to entriesBuffer
             }
+            // TODO pop the first entry from entriesBuffer
             const dateText = "Date for entry " + oldestEntryId;
             const content = "Content for entry " + oldestEntryId;
 
@@ -69,12 +71,8 @@
 
         function loadNewerEntry() {
             // TODO Implement with server
-            if (newestEntryId == null) {
-                oldestEntryId = 0;
-                newestEntryId = 0;
-            } else {
-                newestEntryId--;
-            }
+            // TODO Load latest
+            // TODO Increment newestDateTime
             const dateText = "Date for entry " + newestEntryId;
             const content = "Content for entry " + newestEntryId;
 
