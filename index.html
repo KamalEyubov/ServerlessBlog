@@ -7,8 +7,8 @@
     <div id="new_entry">
         <textarea id="input_content"></textarea>
         <br>
-        <input type="password" id="input_password">
-        <input type="button" id="entry_submission">
+        <input id="input_password" type="password">
+        <input id="entry_submission" type="button">
         <br>
         <div id="submission_status">
     </div>
@@ -17,31 +17,39 @@
     </div>
 
     <script type="text/javascript">
-        const initialEntryRequestReps = 12;
-        const entryRequestReps = 3;
-        var newestDateTime = Date.now();
-        var oldestEntryDate = Math.floor(newestDateTime / (24 * 3600 * 1000));
-        var entriesBuffer = [];
 
-        window.onload = function() {
-            for (var i = 0; i < initialEntryRequestReps; i++) {
-                loadOlderEntry();
-            }
-        }
+        window.onload = getEntries;
 
-        window.onscroll = function() {
-            if ((window.innerHeight + Math.ceil(window.pageYOffset)) >= document.body.offsetHeight) {
-                for (var i = 0; i < entryRequestReps; i++) {
-                    loadOlderEntry();
-                }
-            }
-        };
+        document.getElementById('entry_submission').onclick = putEntry;
 
-        document.getElementById('entry_submission').onclick = function() {
+        function getEntries() {
             // TODO Implement with server
             const request = new XMLHttpRequest();
-            request.open("POST", window.location, true);
+            request.open("GET", window.location + "/entries");
+
+            // TODO Implement "onload" that will parse the JSON array
+            const dateText = "Date for entry " + oldestEntryId;
+            const content = "Content for entry " + oldestEntryId;
+
+            var entry = generateEntry(dateText, content);
+            document.getElementById('feed').append(entry);
+        };
+
+        function generateEntry(dateText, content) {
+            var header = document.createElement('h2');
+            header.innerHTML = dateText;
+            var entry = document.createElement('div');
+            entry.append(header);
+            entry.append(content);
+            return entry;
+        };
+
+        function putEntry() {
+            // TODO Implement with server
+            const request = new XMLHttpRequest();
+            request.open("POST", window.location);
             console.log(document.getElementById('input_content').value);
+            // TODO Make it promise-based
             request.send(JSON.stringify({
                 content: document.getElementById('input_content').value,
                 password: document.getElementById('input_password').value
@@ -52,41 +60,7 @@
             } else {
                 document.getElementById('submission_status').innerHTML = "Wrong password";
             }
-        };
-
-        function loadOlderEntry() {
-            // TODO Implement with server
-            if (entriesBuffer.length === 0) {
-                // TODO Decrement oldestDate until
-                //  End reached or entries loaded
-                // TODO Push entries to entriesBuffer
-            }
-            // TODO pop the first entry from entriesBuffer
-            const dateText = "Date for entry " + oldestEntryId;
-            const content = "Content for entry " + oldestEntryId;
-
-            var entry = generateEntry(dateText, content);
-            document.getElementById('feed').append(entry);
-        };
-
-        function loadNewerEntry() {
-            // TODO Implement with server
-            // TODO Load latest
-            // TODO Increment newestDateTime
-            const dateText = "Date for entry " + newestEntryId;
-            const content = "Content for entry " + newestEntryId;
-
-            var entry = generateEntry(dateText, content);
-            document.getElementById('feed').prepend(entry);
-        };
-
-        function generateEntry(dateText, content) {
-            var header = document.createElement('h2');
-            header.innerHTML = dateText;
-            var entry = document.createElement('div');
-            entry.append(header);
-            entry.append(content);
-            return entry;
+            getEntries();
         };
     </script>
 </body>
