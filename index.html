@@ -8,7 +8,7 @@
         <textarea id="input_content"></textarea>
         <br>
         <input id="input_password" type="password">
-        <input id="entry_submission" type="button">
+        <input id="entry_submission" type="button" value="Submit">
         <br>
         <div id="submission_status">
     </div>
@@ -18,21 +18,25 @@
 
     <script type="text/javascript">
 
-        window.onload = getEntries;
-
-        document.getElementById('entry_submission').onclick = putEntry;
-
         function getEntries() {
-            // TODO Implement with server
+            document.getElementById('feed').replaceChildren();
             const request = new XMLHttpRequest();
             request.open("GET", window.location + "/entries");
 
+            request.send();
+            request.onload = receiveEntries;
+        };
+
+        function receiveEntries(event) {
+            console.log(event.originalTarget.response)
             // TODO Implement "onload" that will parse the JSON array
+            /*
             const dateText = "Date for entry " + oldestEntryId;
             const content = "Content for entry " + oldestEntryId;
 
             var entry = generateEntry(dateText, content);
             document.getElementById('feed').append(entry);
+            */
         };
 
         function generateEntry(dateText, content) {
@@ -44,24 +48,21 @@
             return entry;
         };
 
-        function putEntry() {
-            // TODO Implement with server
+        function postEntry() {
             const request = new XMLHttpRequest();
             request.open("POST", window.location);
-            console.log(document.getElementById('input_content').value);
-            // TODO Make it promise-based
+
             request.send(JSON.stringify({
                 content: document.getElementById('input_content').value,
                 password: document.getElementById('input_password').value
             }));
-            if (document.getElementById('input_password').value === '12345') {
-                loadNewerEntry();
-                document.getElementById('submission_status').innerHTML = "";
-            } else {
-                document.getElementById('submission_status').innerHTML = "Wrong password";
-            }
-            getEntries();
+            request.onload = receiveEntries;
         };
+
+        window.onload = getEntries;
+
+        document.getElementById('entry_submission').onclick = postEntry;
+
     </script>
 </body>
 </html>

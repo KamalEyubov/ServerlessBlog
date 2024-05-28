@@ -6,20 +6,23 @@ function getTable() {
         .db().collection('entries');
 }
 
-async function getEntry(date) {
+async function getEntries() {
+    return [{ content: "Entry1" }, { content: "Entry2" }]
+    // TODO Implement with MongoDB
+    /*
     return (await getTable().find(
-        {
-            date: { $eq: date }
-        },
+        {},
         {
             sort: { time: -1 },
             projection: { _id: 0 }
         }
     )).toArray();
+    */
 }
 
 async function insert(entry) {
-    return getTable().insert(entry);
+    // TODO Implement with MongoDB
+    // return getTable().insert(entry);
 }
 
 async function post(content) {
@@ -39,14 +42,14 @@ export const handler = async (event) => {
             headers = { 'Context-Type': 'text/html' };
             body = data.toString();
         } else {
-            const date = event.requestContext.http.url.slice(1);
-            const entries = await getEntry(date);
+            const entries = await getEntries();
             statusCode = 200;
             headers = { 'Context-Type': 'application/json' };
             body = JSON.stringify(entries);
         }
     } else if (event.requestContext.http.method === 'POST') {
         const { password, content } = JSON.parse(event.body);
+        // TODO Fix content being password
         if (password !== '12345') {
            statusCode = 503;
         } else {
